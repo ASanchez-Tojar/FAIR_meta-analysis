@@ -1,0 +1,82 @@
+"MA_ID","year","DOI","journal_clean","authors_simple","five_year_impact_factor_2018","policy","policyYYYY","policy_in_place","GS_date_citations","GS_total_citations","GS_6_first_years","GS_6_first_years_per_year"
+"MA_015",2018,"10.1111/evo.13625","evolution","Singh_et_al",3.573,"strong",2011,TRUE,20260112,48,38,6.33333333333333
+"MA_023",2019,"10.1111/1365-2435.13422","functional ecology","Feng_et_al",5.037,"strong",2014,TRUE,20260112,47,43,7.16666666666667
+"MA_065",2020,"10.1002/eap.2074","ecological applications","Brisson_et_al",4.378,"strong",2014,TRUE,20260112,68,68,11.3333333333333
+"MA_069",2020,"10.1016/j.agee.2020.107003","agriculture ecosystems & environment","Zhang_et_al",3.954,"strong",2017,TRUE,20260112,70,70,11.6666666666667
+"MA_027",2019,"10.1111/gcb.14606","global change biology","Beckmann_et_al",8.88,"strong",2019,TRUE,20260112,304,247,41.1666666666667
+"MA_003",2017,"10.1111/geb.12603","global ecology & biogeography","DeMalach_et_al",5.667,"weak",2016,TRUE,20260112,96,58,9.66666666666667
+"MA_036",2020,"10.5194/bg-17-2621-2020","biogeosciences","Janssen_et_al",3.951,"strong",2018,TRUE,20260112,27,27,4.5
+"MA_016",2017,"10.1111/gcb.13424","global change biology","Lu_et_al",8.88,"strong",2019,FALSE,20260112,188,109,18.1666666666667
+"MA_019",2017,"10.1111/gcb.13569","global change biology","Yue_et_al",8.88,"strong",2019,FALSE,20260112,273,159,26.5
+"MA_007",2017,"10.3354/meps12211","marine ecology progress series","Wedekin_et_al",2.359,"none",NA,TRUE,20260112,45,28,4.66666666666667
+"MA_045",2018,"10.1016/j.agee.2018.06.029","agriculture ecosystems & environment","Dellar_et_al",3.954,"strong",2017,TRUE,20260112,82,50,8.33333333333333
+"MA_049",2016,"10.1016/j.agee.2016.10.024","agriculture ecosystems & environment","Vicente-Vicente_et_al",3.954,"strong",2017,FALSE,20260112,235,111,18.5
+"MA_020",2017,"10.1111/1365-2435.13137","functional ecology","Lett_et_al",5.037,"strong",2014,TRUE,20260112,119,78,13
+"MA_047",2016,"10.1111/gcb.13351","global change biology","Hu_et_al",8.88,"strong",2019,FALSE,20260112,194,78,13
+"MA_021",2018,"10.1111/gcb.14394","global change biology","Chen_et_al",8.88,"strong",2019,FALSE,20260112,222,132,22
+"MA_004",2018,"10.1111/cobi.12959","conservation biology","Van_Eeden_et_al",6.194,"weak",NA,NA,20260112,418,316,52.6666666666667
+"MA_057",2020,"10.1111/gcb.15369","global change biology","Han_et_al",8.88,"strong",2019,TRUE,20260112,188,188,31.3333333333333
+"MA_048",2018,"10.1111/gcb.14023","global change biology","Haest_et_al",8.88,"strong",2019,FALSE,20260112,53,44,7.33333333333333
+"MA_028",2016,"10.1007/s10980-015-0325-y","landscape ecology","Yeboah_et_al",4.349,"weak",2014,TRUE,20260112,40,23,3.83333333333333
+"MA_056",2018,"10.1111/gcb.14106","global change biology","Cox_et_al",8.88,"strong",2019,FALSE,20260112,186,117,19.5
+"MA_001",2016,"10.1111/evo.13081","evolution","Harts_et_al",3.573,"strong",2011,TRUE,20260112,48,22,3.66666666666667
+"MA_006",2016,"10.1016/j.biocon.2016.02.020","biological conservation","Costantini_et_al",4.451,"strong",2020,FALSE,20260112,55,36,6
+"MA_010",2019,"10.1111/1365-2435.13499","functional ecology","Porter_et_al",5.037,"strong",2014,TRUE,20260112,181,180,30
+"MA_042",2018,"10.1002/jwmg.21456","journal of wildlife management","Gingery_et_al",1.881,"weak",2022,FALSE,20260112,49,38,6.33333333333333
+"MA_053",2017,"10.1111/ecog.02125","ecography","Weber_et_al",5.946,"strong",2018,FALSE,20260112,303,181,30.1666666666667
+"MA_060",2020,"10.1016/j.ecoleng.2020.105790","ecological engineering","Zhao_et_al",3.406,"strong",NA,NA,20260112,30,30,5
+"MA_038",2020,"10.1111/jbi.13791","journal of biogeography","Wang_et_al",3.884,"strong",2018,TRUE,20260112,54,54,9
+"MA_068",2018,"10.1111/ele.13095","ecology letters","Frank_et_al",8.699,"strong",2016,TRUE,20260112,74,55,9.16666666666667
+"MA_035",2019,"10.1093/jhered/esz023","journal of heredity","Dochtermann_et_al",2.618,"strong",2013,TRUE,20260112,200,166,27.6666666666667
+"MA_008",2016,"10.1111/gcb.13185","global change biology","Zhao_et_al",8.88,"strong",2019,FALSE,20260112,179,85,14.1666666666667
+"MA_059",2017,"10.1111/gcb.13714","global change biology","Lichtenberg_et_al",8.88,"strong",2019,FALSE,20260112,476,284,47.3333333333333
+"MA_026",2019,"10.1098/rsbl.2018.0840","biology letters","Chalkowski_et_al",3.323,"strong",2013,TRUE,20260112,101,87,14.5
+"MA_011",2017,"10.3354/meps12349","marine ecology progress series","Clarke_et_al",2.359,"none",NA,TRUE,20260112,19,14,2.33333333333333
+"MA_061",2020,"10.1002/ece3.6066","ecology & evolution","Cosset_et_al",2.415,"strong",2018,TRUE,20260112,7,7,1.16666666666667
+"MA_062",2020,"10.1111/gcb.15218","global change biology","Chen_et_al",8.88,"strong",2019,TRUE,20260112,231,231,38.5
+"MA_034",2017,"10.1111/1365-2664.12815","journal of applied ecology","Bowles_et_al",5.782,"strong",2014,TRUE,20260112,324,184,30.6666666666667
+"MA_044",2020,"10.1111/gcb.14933","global change biology","Tan_et_al",8.88,"strong",2019,TRUE,20260112,199,199,33.1666666666667
+"MA_022",2017,"10.1111/fwb.12918","freshwater biology","Kennedy_et_al",3.404,"weak",2019,FALSE,20260112,28,25,4.16666666666667
+"MA_032",2018,"10.1111/geb.12660","global ecology & biogeography","Soininen_et_al",5.667,"weak",2016,TRUE,20260112,549,356,59.3333333333333
+"MA_041",2018,"10.1002/ecs2.2354","ecosphere","Lee",2.746,"strong",2021,FALSE,20260112,43,30,5
+"MA_014",2019,"10.1002/ece3.5210","ecology & evolution","Al-Hadeethi_et_al",2.415,"strong",2018,TRUE,20260112,27,21,3.5
+"MA_040",2017,"10.1111/ecog.02380","ecography","Sheppard-Brennand_et_al",5.946,"strong",2018,FALSE,20260112,44,23,3.83333333333333
+"MA_071",2019,"10.1111/1365-2656.12972","journal of animal ecology","Glaudas_et_al",4.364,"strong",2014,TRUE,20260112,82,64,10.6666666666667
+"MA_050",2018,"10.1111/ele.12874","ecology letters","Vidal_et_al",8.699,"strong",2016,TRUE,20260112,313,218,36.3333333333333
+"MA_017",2016,"10.1016/j.agee.2016.08.019","agriculture ecosystems & environment","Pan_et_al",3.954,"strong",2017,FALSE,20260112,694,302,50.3333333333333
+"MA_031",2019,"10.1111/gcb.14678","global change biology","Brandenburg_et_al",8.88,"strong",2019,TRUE,20260112,123,96,16
+"MA_013",2016,"10.1016/j.agee.2016.06.028","agriculture ecosystems & environment","Wu_et_al",3.954,"strong",2017,FALSE,20260112,47,24,4
+"MA_073",2020,"10.15666/aeer/1806_80098021","applied ecology & environmental research","Ogbuewu_et_al",0.689,"none",NA,TRUE,20260112,1,1,0.166666666666667
+"MA_064",2016,"10.1016/j.agee.2015.09.030","agriculture ecosystems & environment","Gilsanz_et_al",3.954,"strong",2017,FALSE,20260112,249,140,23.3333333333333
+"MA_067",2018,"10.1111/gcb.13837","global change biology","Wheeler_et_al",8.88,"strong",2019,FALSE,20260112,42,32,5.33333333333333
+"MA_024",2018,"10.1111/gcb.13969","global change biology","Sepp_et_al",8.88,"strong",2019,FALSE,20260112,201,142,23.6666666666667
+"MA_002",2020,"10.1111/1365-2664.13542","journal of applied ecology","Watson_et_al",5.782,"strong",2014,TRUE,20260112,168,168,28
+"MA_066",2016,"10.1111/gcb.13093","global change biology","Schirmel_et_al",8.88,"strong",2019,FALSE,20260112,230,112,18.6666666666667
+"MA_070",2018,"10.1002/eco.1934","ecohydrology","Sirimarco_et_al",2.564,"weak",2017,TRUE,20260112,37,24,4
+"MA_063",2017,"10.1098/rspb.2017.0583","proceedings of the royal society b-biological sciences","Crane_et_al",4.304,"strong",2014,TRUE,20260112,135,69,11.5
+"MA_033",2019,"10.1111/ele.13261","ecology letters","Tomasetto_et_al",8.699,"strong",2016,TRUE,20260112,59,51,8.5
+"MA_037",2020,"10.1098/rspb.2020.1853","proceedings of the royal society b-biological sciences","Poirier_et_al",4.304,"strong",2014,TRUE,20260112,51,51,8.5
+"MA_058",2018,"10.1111/1365-2664.13193","journal of applied ecology","Siviter_et_al",5.782,"strong",2014,TRUE,20260112,219,155,25.8333333333333
+"MA_055",2019,"10.1111/ecog.03926","ecography","Montesinos-Navarro_et_al",5.946,"strong",2018,TRUE,20260112,50,42,7
+"MA_051",2020,"10.1111/geb.13028","global ecology & biogeography","He_et_al",5.667,"weak",2016,TRUE,20260112,125,125,20.8333333333333
+"MA_072",2016,"10.1111/oik.03166","oikos","Edge_et_al",3.468,"strong",2018,FALSE,20260112,30,17,2.83333333333333
+"MA_009",2017,"10.1111/fwb.12888","freshwater biology","Sievers_et_al",3.404,"weak",2019,FALSE,20260112,43,32,5.33333333333333
+"MA_043",2017,"10.1111/geb.12638","global ecology & biogeography","Branoff",5.667,"weak",2016,TRUE,20260112,91,57,9.5
+"MA_029",2020,"10.1002/jwmg.21807","journal of wildlife management","Arnold_et_al",1.881,"weak",2022,FALSE,20260112,35,35,5.83333333333333
+"MA_030",2019,"10.1002/ecy.2552","ecology","Peng_et_al",4.285,"strong",2021,FALSE,20260112,161,140,23.3333333333333
+"MA_005",2019,"10.1111/geb.13017","global ecology & biogeography","He_et_al",5.667,"weak",2016,TRUE,20260112,64,64,10.6666666666667
+"MA_054",2020,"10.1111/ele.13527","ecology letters","Filazzola_et_al",8.699,"strong",2016,TRUE,20260112,303,303,50.5
+"MA_025",2019,"10.1111/mec.14920","molecular ecology","Lamb_et_al",5.855,"strong",2011,TRUE,20260112,460,369,61.5
+"MA_052",2016,"10.1111/aec.12303","austral ecology","Gantchoff_et_al",1.403,"weak",NA,NA,20260112,22,10,1.66666666666667
+"MA_039",2020,"10.1111/gcb.14970","global change biology","Deng_et_al",8.88,"strong",2019,TRUE,20260112,181,181,30.1666666666667
+"MA_018",2020,"10.1111/1365-2664.13597","journal of applied ecology","Wu_et_al",5.782,"strong",2014,TRUE,20260112,199,199,33.1666666666667
+"MA_012",2019,"10.1111/eva.12865","evolutionary applications","Tepolt_et_al",5.038,"strong",2011,TRUE,20260112,26,26,4.33333333333333
+"MA_046",2018,"10.1111/gcb.14163","global change biology","Dai_et_al",8.88,"strong",2019,FALSE,20260112,793,435,72.5
+"MA_074",2016,"10.1002/ece3.2739","ecology & evolution","Little_et_al",2.415,"strong",2018,FALSE,20260112,10,8,1.33333333333333
+"MA_075",2018,"10.1111/ele.13078","ecology letters","Liu_et_al",8.699,"strong",2016,TRUE,20260112,141,107,17.8333333333333
+"MA_076",2019,"10.1002/ece3.5617","ecology & evolution","Ortega_et_al",2.415,"strong",2018,TRUE,20260112,15,15,2.5
+"MA_077",2018,"10.1111/2041-210X.13013","methods in ecology & evolution","Portugal_et_al",7.099,"strong",2014,TRUE,20260112,101,73,12.1666666666667
+"MA_078",2018,"10.1093/molbev/msx305","molecular biology & evolution","Voskarides",14.797,"strong",2011,TRUE,20251001,54,46,7.66666666666667
+"MA_079",2018,"10.1111/ele.13088","ecology letters","Baert_et_al",8.699,"strong",2016,TRUE,20260112,106,65,10.8333333333333
+"MA_080",2019,"10.1038/s41396-018-0321-8","isme journal","Zhou_et_al",9.493,"weak",2022,FALSE,20260112,132,113,18.8333333333333
+"MA_081",2016,"10.1071/WR15132","wildlife research","Byrom_et_al",1.244,"weak",2021,FALSE,20260112,89,58,9.66666666666667
