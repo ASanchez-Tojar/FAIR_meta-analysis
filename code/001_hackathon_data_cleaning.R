@@ -41,7 +41,6 @@ rm(list = ls())
 # Data
 ################################################################################
 
-setwd("C:/Users/localadmin/Dropbox/EXCELSiOR/projects/meta-research/meta-analysis_quality_and_reproducibility")
 
 # importing data from Google Forms: hackathon 1
 hackathon1 <- read.csv("data/raw_data/hackathons/2016-2020/01_raw_master_copies/hackathon_20250613_ESMARConf_Form_v1.csv", header=T)

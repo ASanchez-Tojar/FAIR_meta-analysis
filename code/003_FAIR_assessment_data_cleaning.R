@@ -39,8 +39,6 @@ rm(list = ls())
 # Data
 ################################################################################
 
-setwd("C:/Users/localadmin/Dropbox/EXCELSiOR/projects/meta-research/meta-analysis_quality_and_reproducibility")
-
 # importing data from Google Forms:
 FAIR.response.raw <- read.csv("data/raw_data/FAIR_assessment/FAIR_data_assessment_Form_Responses.csv", header=T)
 

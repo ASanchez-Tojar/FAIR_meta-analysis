@@ -40,8 +40,6 @@ rm(list = ls())
 # Data
 ################################################################################
 
-setwd("C:/Users/localadmin/Dropbox/EXCELSiOR/projects/meta-research/meta-analysis_quality_and_reproducibility")
-
 # importing cleaned and final data from the hackathon + manual assessment
 MR_MA <- read.csv("data/processed_data/combined/meta-research_meta-analysis_final_2016-2020.csv", header=T)
 names(MR_MA)

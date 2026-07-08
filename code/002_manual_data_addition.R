@@ -48,8 +48,6 @@ rm(list = ls())
 # Data
 ################################################################################
 
-setwd("C:/Users/localadmin/Dropbox/EXCELSiOR/projects/meta-research/meta-analysis_quality_and_reproducibility")
-
 # importing cleaned hackathondata from script 001
 hackathon_cleaned <- read.csv("data/processed_data/hackathons/2016-2020/01_hackathon_data_cleaned.csv", header=T)
 
