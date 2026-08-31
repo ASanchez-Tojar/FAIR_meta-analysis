@@ -29,11 +29,7 @@
 
 # install.packages("pacman")
 # load packages
-pacman::p_load(dplyr,
-               tidyverse,
-               stringr,
-               writexl,
-               readxl)
+pacman::p_load(tidyverse)
 
 # cleaning up
 rm(list = ls())
@@ -49,11 +45,11 @@ rm(list = ls())
 ################################################################################
 
 # importing cleaned hackathondata from script 001
-hackathon_cleaned <- read.csv("data/processed_data/hackathons/2016-2020/01_hackathon_data_cleaned.csv", header=T)
+hackathon_cleaned <- read.csv("data/02_processed_data/hackathons/2016-2020/01_hackathon_data_cleaned.csv", header=T)
 
 
 # importing cleaned manual data prepared by Shreya Dimri
-manual_cleaned <- read.csv("data/processed_data/manual_assessment/2016-2020/manual_extraction_master_MRMA_SD.csv", header=T)
+manual_cleaned <- read.csv("data/02_processed_data/manual_assessment/2016-2020/manual_extraction_master_MRMA_SD.csv", header=T)
 
 ################################################################################
 # revising column names
@@ -121,9 +117,9 @@ conflicted_articles <- conflict_check %>%
 
 # Print result
 if (nrow(conflicted_articles) == 0) {
-  message("✅ All conflicts resolved: ready to collapse dataset.")
+  message("All conflicts resolved: ready to collapse dataset.")
 } else {
-  stop("⚠️ Conflicts remain in standardized columns for the following MA_ID(s):\n",
+  stop("Conflicts remain in standardized columns for the following MA_ID(s):\n",
        paste(conflicted_articles$MA_ID, collapse = ", "))
 }
 
@@ -515,7 +511,7 @@ full_cleaned_final <- full_cleaned_final %>%
            .after = guidelines_name)
 
 # importing extra 8 meta-analysis
-extra_ma_cleaned <- read.csv("data/processed_data/combined/meta-research_meta-analysis_final_2016-2020_extra_papers.csv", header=T)
+extra_ma_cleaned <- read.csv("data/02_processed_data/combined/meta-research_meta-analysis_final_2016-2020_extra_papers.csv", header=T)
 
 # table(extra_ma_cleaned$effect_size_sign_accounted_revised)
 # table(extra_ma_cleaned$effect_size_category)
@@ -572,6 +568,41 @@ full_cleaned_final_extra_red <- full_cleaned_final_extra %>%
   as.data.frame()
 
 write.csv(full_cleaned_final_extra_red,
-          "data/processed_data/combined/meta-research_meta-analysis_final_2016-2020.csv",
+          "data/02_processed_data/combined/meta-research_meta-analysis_final_2016-2020.csv",
           row.names=FALSE)
 
+
+################################################################################
+
+# sessionInfo()
+# 
+# R version 4.5.2 (2025-10-31)
+# Platform: aarch64-apple-darwin20
+# Running under: macOS Tahoe 26.3.1
+# 
+# Matrix products: default
+# BLAS:   /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib 
+# LAPACK: /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1
+# 
+# locale:
+#   [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+# 
+# time zone: Europe/Berlin
+# tzcode source: internal
+# 
+# attached base packages:
+#   [1] stats     graphics  grDevices utils     datasets  methods   base     
+# 
+# other attached packages:
+#   [1] readxl_1.5.0    writexl_1.5.4   lubridate_1.9.5 forcats_1.0.1   stringr_1.6.0   purrr_1.2.2     readr_2.2.0    
+# [8] tidyr_1.3.2     tibble_3.3.1    ggplot2_4.0.3   tidyverse_2.0.0 dplyr_1.2.1    
+# 
+# loaded via a namespace (and not attached):
+#   [1] gtable_0.3.6       compiler_4.5.2     tidyselect_1.2.1   gridExtra_2.3      scales_1.4.0       yaml_2.3.12       
+# [7] fastmap_1.2.0      here_1.0.2         R6_2.6.1           generics_0.1.4     patchwork_1.3.2    knitr_1.51        
+# [13] viridis_0.6.5      rprojroot_2.1.1    tzdb_0.5.0         pillar_1.11.1      RColorBrewer_1.1-3 rlang_1.3.0       
+# [19] utf8_1.2.6         stringi_1.8.7      xfun_0.58          S7_0.2.2           otel_0.2.0         timechange_0.4.0  
+# [25] viridisLite_0.4.3  cli_3.6.6          withr_3.0.3        magrittr_2.0.5     digest_0.6.39      grid_4.5.2        
+# [31] rstudioapi_0.18.0  hms_1.1.4          lifecycle_1.0.5    vctrs_0.7.3        evaluate_1.0.5     glue_1.8.1        
+# [37] farver_2.1.2       cellranger_1.1.0   pacman_0.5.1       rmarkdown_2.31     tools_4.5.2        pkgconfig_2.0.3   
+# [43] htmltools_0.5.9  

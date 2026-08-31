@@ -22,9 +22,7 @@
 
 # install.packages("pacman")
 # load packages
-pacman::p_load(dplyr,
-               tidyverse,
-               stringr,
+pacman::p_load(tidyverse,
                writexl,
                readxl)
 
@@ -43,10 +41,10 @@ rm(list = ls())
 
 
 # importing data from Google Forms: hackathon 1
-hackathon1 <- read.csv("data/raw_data/hackathons/2016-2020/01_raw_master_copies/hackathon_20250613_ESMARConf_Form_v1.csv", header=T)
+hackathon1 <- read.csv("data/01_raw_data/hackathons/2016-2020/01_raw_master_copies/hackathon_20250613_ESMARConf_Form_v1.csv", header=T)
 
 # importing data from Google Forms: hackathon 2
-hackathon2 <- read.csv("data/raw_data/hackathons/2016-2020/01_raw_master_copies/hackathon_20250820_unofficial_Form_v2.csv", header=T)
+hackathon2 <- read.csv("data/01_raw_data/hackathons/2016-2020/01_raw_master_copies/hackathon_20250820_unofficial_Form_v2.csv", header=T)
 
 ################################################################################
 # Building common dataset
@@ -1254,7 +1252,7 @@ hackathon.errors <- as.data.frame(
 #                     "data/raw_data/hackathons/2016-2020/02_error_fixing/01_entry_revision_type_to_correct.xlsx")
 
 # reimporting and replacing
-hackathon.corrections <- readxl::read_excel("data/raw_data/hackathons/2016-2020/02_error_fixing/01_entry_revision_type_to_correct_AST.xlsx")
+hackathon.corrections <- readxl::read_excel("data/01_raw_data/hackathons/2016-2020/02_error_fixing/01_entry_revision_type_to_correct_AST.xlsx")
 
 # Changelog
 
@@ -1390,7 +1388,7 @@ hackathon.RoB.revision <- as.data.frame(
 # with all special characters, despite using write_csv which per default has
 # UTF-8 enconding
 # writexl::write_xlsx(hackathon.RoB.revision,
-#                     "data/raw_data/hackathons/2016-2020/02_error_fixing/02_RoB_revision.xlsx")
+#                     "data/01_raw_data/hackathons/2016-2020/02_error_fixing/02_RoB_revision.xlsx")
 
 
 # # exporting dataset for Shreya to use it while preparing the manually extracted
@@ -1415,14 +1413,14 @@ hackathon.RoB.revision <- as.data.frame(
 #                           code_chosen_link,
 #                           data_and_code_sharing_comments,
 #                           observer_disagreement),
-#                  "data/raw_data/hackathons/2016-2020/999_data_and_code_variables_SD.csv")
+#                  "data/01_raw_data/hackathons/2016-2020/999_data_and_code_variables_SD.csv")
 # 
 
 
 
 # reimporting and adding the new _revised entries, including the
 # comments_revised, which explains the decisions made for each entry
-hackathon.RoB.revision.done <- readxl::read_excel("data/raw_data/hackathons/2016-2020/02_error_fixing/02_RoB_revision_AST.xlsx")
+hackathon.RoB.revision.done <- readxl::read_excel("data/01_raw_data/hackathons/2016-2020/02_error_fixing/02_RoB_revision_AST.xlsx")
 
 # selecting only the variables of interest to add them to our dataset
 hackathon.RoB.revision.done.subset <- hackathon.RoB.revision.done %>%
@@ -1592,7 +1590,7 @@ hackathon.RoB.revision.PDF <- as.data.frame(
 #                     "data/raw_data/hackathons/2016-2020/02_error_fixing/03_RoB_revision_PDF.xlsx")
 
 # reimporting and replacing
-hackathon.RoB.revision.PDF.done <- readxl::read_excel("data/raw_data/hackathons/2016-2020/02_error_fixing/03_RoB_revision_PDF_AST.xlsx")
+hackathon.RoB.revision.PDF.done <- readxl::read_excel("data/01_raw_data/hackathons/2016-2020/02_error_fixing/03_RoB_revision_PDF_AST.xlsx")
 
 # Changelog
 
@@ -1809,7 +1807,7 @@ hackathon.ES.IS.revision <- as.data.frame(
 
 # reimporting and adding the new _revised entries, including the
 # comments_revised, which explains the decisions made for each entry
-hackathon.ES.IS.revision.done <- readxl::read_excel("data/raw_data/hackathons/2016-2020/02_error_fixing/04_ES_IS_revision_AST.xlsx")
+hackathon.ES.IS.revision.done <- readxl::read_excel("data/01_raw_data/hackathons/2016-2020/02_error_fixing/04_ES_IS_revision_AST.xlsx")
 
 # While revising them, extra findings:
 
@@ -1875,7 +1873,7 @@ hackathon.ES.IS.revision.PDF <- as.data.frame(
 #                     "data/raw_data/hackathons/2016-2020/02_error_fixing/05_ES_IS_revision_PDF.xlsx")
 
 # reimporting and replacing
-hackathon.ES.IS.revision.PDF.done <- readxl::read_excel("data/raw_data/hackathons/2016-2020/02_error_fixing/05_ES_IS_revision_PDF_AST.xlsx")
+hackathon.ES.IS.revision.PDF.done <- readxl::read_excel("data/01_raw_data/hackathons/2016-2020/02_error_fixing/05_ES_IS_revision_PDF_AST.xlsx")
 
 # Changelog
 
@@ -2625,5 +2623,40 @@ str(hackathon_clean_7_subset)
 
 # exporting the dataset
 write.csv(as.data.frame(hackathon_clean_7_subset),
-          "data/processed_data/hackathons/2016-2020/01_hackathon_data_cleaned.csv",
+          "data/02_processed_data/hackathons/2016-2020/01_hackathon_data_cleaned.csv",
           row.names=FALSE)
+
+
+# Save session information for reproducibility
+# sessionInfo()
+
+# R version 4.5.2 (2025-10-31)
+# Platform: aarch64-apple-darwin20
+# Running under: macOS Tahoe 26.3.1
+# 
+# Matrix products: default
+# BLAS:   /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib 
+# LAPACK: /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1
+# 
+# locale:
+#   [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+# 
+# time zone: Europe/Berlin
+# tzcode source: internal
+# 
+# attached base packages:
+#   [1] stats     graphics  grDevices utils     datasets  methods   base     
+# 
+# other attached packages:
+#   [1] readxl_1.5.0    writexl_1.5.4   lubridate_1.9.5 forcats_1.0.1   stringr_1.6.0   purrr_1.2.2     readr_2.2.0    
+# [8] tidyr_1.3.2     tibble_3.3.1    ggplot2_4.0.3   tidyverse_2.0.0 dplyr_1.2.1    
+# 
+# loaded via a namespace (and not attached):
+#   [1] gtable_0.3.6       compiler_4.5.2     tidyselect_1.2.1   gridExtra_2.3      scales_1.4.0       yaml_2.3.12       
+# [7] fastmap_1.2.0      here_1.0.2         R6_2.6.1           generics_0.1.4     patchwork_1.3.2    knitr_1.51        
+# [13] viridis_0.6.5      rprojroot_2.1.1    tzdb_0.5.0         pillar_1.11.1      RColorBrewer_1.1-3 rlang_1.3.0       
+# [19] utf8_1.2.6         stringi_1.8.7      xfun_0.58          S7_0.2.2           otel_0.2.0         timechange_0.4.0  
+# [25] viridisLite_0.4.3  cli_3.6.6          withr_3.0.3        magrittr_2.0.5     digest_0.6.39      grid_4.5.2        
+# [31] rstudioapi_0.18.0  hms_1.1.4          lifecycle_1.0.5    vctrs_0.7.3        evaluate_1.0.5     glue_1.8.1        
+# [37] farver_2.1.2       cellranger_1.1.0   pacman_0.5.1       rmarkdown_2.31     tools_4.5.2        pkgconfig_2.0.3   
+# [43] htmltools_0.5.9  

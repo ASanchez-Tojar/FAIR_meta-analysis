@@ -9,155 +9,135 @@
 # Description of script and Instructions
 ################################################################################
 
-# This script is to add bibliographic and citation details to all meta-analyses
-# in our list.
+# This script is to add bibliographic and annual citation count to all 
+# meta-analyses in our list.
 
-# Here is a dataset that I have collected in which "MA_ID" is the id for each of
-# the 81 meta-analyses assessed, with their title ("title") and year of 
-# publication ("year_of_publication"; which refers to the year they where 
-# included in an issue, but notice that sometimes their corresponding date of 
-# first online publication by the journal could be the year before; range: 2016 
-# to 2020). For these 81 meta-analyses, I extracted their citations per year 
-# using Google Scholar. "GS_date_citations" is the date of extraction. There are
-# 10 columns containing the citations for each of those years (GS_citations_2016, 
-# GS_citations_2017, ... , GS_citations_2025). In the latter, NA indicates that 
-# the meta-analysis was not yet published. Notice, however, that for a few cases, 
-# there might be citations in the year before they were published, which might 
-# happen if the article was published online in the year before they were finally 
-# included in the journal issue. What I would like to know using this dataset is 
-# what is the average number of years after publication where citations peak. 
+# Each meta-analysis is identified by a unique article identifier ("MA_ID") and
+# is linked to its title and year of publication. The variable
+# "year_of_publication" refers to the year in which the article was assigned to
+# a journal issue. In some cases, the article may have been published online in
+# the preceding year.
+# Annual citation counts were extracted from Google Scholar. The variable
+# "GS_date_citations" records the date on which the citation data were collected.
+# Citation counts are stored in ten year-specific variables:
+# "GS_citations_2016" to "GS_citations_2025".
+# Missing values in these variables generally indicate that the meta-analysis
+# had not yet been published in the corresponding year. However, some articles
+# received citations before their formal issue year, likely because they had
+# already been published online.
 
-# For each meta-analysis (row):
-# Identify its publication year (year_of_publication).
-# Gather its citations per year (2016–2025).
-# Compute the citations per year since publication, i.e. 
-#       year_since_pub = citation_year - year_of_publication.
-# Find the year_since_pub with the maximum number of citations for that 
-#       meta-analysis (its “peak year”).
-# Average those peak years since publication across all meta-analyses.
-
+# This script
+# 1.identifies the formal year of publication
+# 2.calculates the number of years since publication as:
+# year_since_publication = citation_year - year_of_publication
+# 3.identifies the year since publication with the highest annual citation count
+# 4.calculates the average citation-peak year across all meta-analyses.
 
 ################################################################################
-# Packages needed
+# Packages and data needed
 ################################################################################
 
 # install.packages("pacman")
 # load packages
-pacman::p_load(dplyr,
-               tidyr,
-               ggplot2,
-               stringr,
+pacman::p_load(tidyverse,
                purrr)
-
 
 # cleaning up
 rm(list = ls())
 
-setwd("C:/Users/localadmin/Dropbox/EXCELSiOR/projects/meta-research/meta-analysis_quality_and_reproducibility")
-
 # Load data for citations
-df <- read.csv("data/processed_data/combined/meta-analysis_2016-2020_citations.csv")
+citations_df <- read.csv("data/02_processed_data/combined/meta-analysis_2016-2020_citations.csv")
 
 # Load data with bibligraphic information
-biblio <- read.csv("data/processed_data/combined/meta-analysis_2016-2020_bibliographic_info.csv")
+biblio <- read.csv("data/02_processed_data/combined/meta-analysis_2016-2020_bibliographic_info.csv")
 
 ################################################################################
-# Bibliographic information
+# Bibliographic information (Cleaning Journal names and Author Names)
 ################################################################################
 
-# excluding excluded articles
-biblio.included <- biblio %>% filter(Include_exclude=="include")
-
-# cleaning the data, starting with the journal
-biblio_clean <- biblio.included %>%
-  # Remove unneeded variables
-  select(-paperID,-exclusion_explanation, -exclusion_category, -Include_exclude, -Clarification) %>%
-  
-  # Clean and harmonize journal names
+biblio_clean <- biblio %>%
+  # Keeping only articles that were included in the study
+  filter(Include_exclude == "include") %>% 
+  # Remove variables that are not needed 
+  select(-paperID,
+         -exclusion_explanation, 
+         -exclusion_category, 
+         -Include_exclude, 
+         -Clarification) %>%
+  # Standardise journal names
   mutate(
     journal_clean = journal %>%
       str_to_lower() %>%                      # all lowercase
-      str_replace_all("\\\\&", "&") %>%       # fix escaped ampersand
-      str_replace_all("\\band\\b", "&") %>%   # replace "and" with "&"
-      str_replace_all("\\bad\\b", "&") %>%    # fix "ad" typos to "&"
+      str_replace_all("\\\\&|\\b(?:and|ad)\\b", "&") %>% 
       str_squish()                            # trim + remove double spaces
   ) %>%
-  # Manual harmonization for known inconsistencies
-  mutate(
-    journal_clean = case_when(
-      journal_clean == "agricultural ecosystems & environment" ~ "agriculture ecosystems & environment",
-      journal_clean == "global ecology ad biogeography" ~ "global ecology & biogeography",
-      journal_clean == "biological conversation" ~ "biological conservation",
-      journal_clean == "evolution & ecology of microbiomes" ~ "functional ecology", #this was a typo!
-      TRUE ~ journal_clean
-    )
-  )
+# Manual harmonization for known inconsistencies
+mutate(
+  journal_clean = case_when(
+    journal_clean == "agricultural ecosystems & environment" ~ "agriculture ecosystems & environment",
+    journal_clean == "biological conversation" ~ "biological conservation",
+    journal_clean == "evolution & ecology of microbiomes" ~ "functional ecology", #this was a typo!
+    TRUE ~ journal_clean
+  ))
+ 
 
 head(biblio_clean)
 table(biblio_clean$journal_clean)
 biblio_clean %>% count(journal_clean, sort = TRUE)
 
 
-# cleaning the data, going for authors. For cleaning this messy variable, I 
-# worked together with ChatGPT. The code is a bit of an overkilled but it works
-# so I am keepin it here
+# Now cleaning the author names. For cleaning this messy variable, 
+# I worked together with ChatGPT to make the helper function.
 
 # Helper function to extract first author surname
-extract_first_surname <- function(a) {
-  if (is.na(a) || str_trim(a) == "") return(NA_character_)
-  s <- str_trim(a)
-  s2 <- str_replace_all(s, "\\s*&\\s*", " and ")  # unify ampersands
-  has_and <- str_detect(s2, regex("\\band\\b", ignore_case = TRUE))
-  comma_count <- str_count(s2, ",")
-  multiple <- FALSE
-  
-  if (has_and) {
-    first_author <- str_trim(str_split(s2, regex("\\band\\b", ignore_case = TRUE))[[1]][1])
-    multiple <- TRUE
-  } else if (comma_count >= 2) {
-    first_author <- str_trim(str_split(s2, ",")[[1]][1])
-    multiple <- TRUE
-  } else if (comma_count == 1) {
-    parts <- str_split(s2, ",")[[1]]
-    part_after <- str_trim(parts[2])
-    if (str_detect(part_after, "\\s")) {
-      first_author <- str_trim(parts[1])
-      multiple <- TRUE
-    } else {
-      first_author <- str_trim(parts[1])
-      multiple <- FALSE
-    }
-  } else {
-    first_author <- s2
-    multiple <- FALSE
+extract_first_surname <- function(authors) {
+  if (is.na(authors) || stringr::str_squish(authors) == "") {
+    return(NA_character_)
   }
-  
-  fa <- first_author
-  # If format "Last, First"
-  if (str_detect(fa, ",")) {
-    surname <- str_trim(str_split(fa, ",")[[1]][1])
+  authors <- stringr::str_squish(authors)
+  n_commas <- stringr::str_count(authors, ",")
+  # Identify whether the record contains multiple authors
+  multiple <- stringr::str_detect(
+    authors,
+    stringr::regex("\\band\\b", ignore_case = TRUE)
+  ) || n_commas >= 2
+  # Extract the first author
+  first_author <- if (stringr::str_detect(
+    authors,
+    stringr::regex("\\band\\b", ignore_case = TRUE)
+  )) {
+    stringr::str_split(
+      authors,
+      stringr::regex("\\band\\b", ignore_case = TRUE),
+      simplify = TRUE
+    )[1]
+  } else if (n_commas >= 2) {
+    # Handles "First Last, First Last, First Last"
+    stringr::str_split(authors, ",", simplify = TRUE)[1]
   } else {
-    # keep prefixes (van, de, etc.)
-    if (str_detect(fa, regex("van\\s+der\\s+\\w+$", ignore_case = TRUE))) {
-      surname <- str_extract(fa, regex("van\\s+der\\s+\\w+$", ignore_case = TRUE))
-    } else if (str_detect(fa, regex("van\\s+de\\s+\\w+$", ignore_case = TRUE))) {
-      surname <- str_extract(fa, regex("van\\s+de\\s+\\w+$", ignore_case = TRUE))
-    } else if (str_detect(fa, regex("van\\s+den\\s+\\w+$", ignore_case = TRUE))) {
-      surname <- str_extract(fa, regex("van\\s+den\\s+\\w+$", ignore_case = TRUE))
-    } else if (str_detect(fa, regex("(van|von|de|del|di|da|la|le|du|st)\\s+\\w+$", ignore_case = TRUE))) {
-      surname <- str_extract(fa, regex("(van|von|de|del|di|da|la|le|du|st)\\s+\\w+$", ignore_case = TRUE))
-    } else {
-      surname <- str_trim(str_extract(fa, "[^\\s]+$"))
-    }
+    authors
   }
+  first_author <- stringr::str_squish(first_author)
+  # Extract surname
+  surname <- if (stringr::str_detect(first_author, ",")) {
+    # Handles "Surname, Given name"
+    stringr::str_extract(first_author, "^[^,]+")
+  } else {
+    # Handles "Given name Surname", including prefixes such as Van Eeden
+    stringr::str_extract(
+      first_author,
+      stringr::regex(
+        "(?:(?:van|von|de|del|di|da|la|le|du|st)\\s+)*\\S+$",
+        ignore_case = TRUE)
+    )
+    }
   
-  surname_clean <- surname %>%
-    str_replace_all("\\.", "") %>%
-    str_squish()
+  surname <- surname |>
+    stringr::str_remove_all("\\.") |>
+    stringr::str_squish() |>
+    stringr::str_replace_all("\\s+", "_")
   
-  surname_final <- str_replace_all(surname_clean, "\\s+", "_")
-  
-  if (multiple) paste0(surname_final, "_et_al") else surname_final
+  if (multiple) paste0(surname, "_et_al") else surname
 }
 
 # Apply to dataset
@@ -172,7 +152,6 @@ biblio_clean <- biblio_clean %>%
     )
   )
 
-
 biblio_clean %>%
   select(authors,authors_simple) %>%
   mutate(authors = str_trunc(authors, 50)) %>%
@@ -182,40 +161,31 @@ biblio_clean %>%
 length(biblio_clean$authors_simple)
 unique(length(biblio_clean$authors_simple))
 
-
 # removing the variables that we do not need anymore
 biblio_clean <- biblio_clean %>%
   # Remove unneeded variables
   select(-authors,-journal)
 
 head(biblio_clean)
-
 biblio_clean %>% count(year, sort = TRUE)
-
 
 ################################################################################
 # Journal policies
 ################################################################################
 
-# Load data with bibligraphic information
-journal.policies <- read.csv("data/journal_policies/Berberi_and_Roche_OSF_Living_dataset_20251003/DataPolicies_DATA.csv")
+# Load data with bibligraphic information 
+# from Berberi_and_Roche_OSF_Living_dataset_2025
+
+journal.policies <- read.csv("data/03_journal_policies/Berberi_and_Roche_OSF_Living_dataset_20251003/DataPolicies_DATA.csv")
 head(journal.policies)
 
 journal.policies_clean <- journal.policies %>%
   mutate(
     Journal_clean = Journal %>%
-      str_to_lower() %>%                      # all lowercase
-      str_replace_all("\\band\\b", "&") %>%   # replace "and" with &
-      str_replace_all("\\s*&\\s*", " & ") %>% # unify spacing around &
-      str_squish()                            # trim + remove extra spaces
-  ) %>%
-  # manual harmonization for known mismatches
-  mutate(
-    Journal_clean = case_when(
-      Journal_clean == "agricultural ecosystems & environment" ~ "agriculture ecosystems & environment",
-      Journal_clean == "global ecology ad biogeography" ~ "global ecology & biogeography",
-      TRUE ~ Journal_clean
-    ),
+      str_to_lower() %>%
+      str_replace_all("\\band\\b", "&") %>%
+      str_replace_all("\\s*&\\s*", " & ") %>%
+      str_squish(),
     # manually add missing policy year
     policyYYYY = case_when(
       Journal_clean == "landscape ecology" ~ 2014, # added after communication with the journal
@@ -227,7 +197,6 @@ journal.policies_clean <- journal.policies %>%
       TRUE ~ policyYYYY
     )
   )
-
 
 # Check matches
 biblio_clean %>%
@@ -242,6 +211,10 @@ biblio_clean %>%
 
 # checking journals and counts
 biblio_clean %>% count(journal_clean)
+
+################################################################################
+# Impact Factor for Journals
+################################################################################
 
 # -----------------------------------------------------------------------------
 # Add five-year impact factor (2018) manually
@@ -341,7 +314,7 @@ biblio_clean %>%
 journal.policies_clean <- journal.policies_clean %>%
   mutate(policyYYYY = as.numeric(policyYYYY))
 
-# Join policy info to your bibliographic dataset
+# Join policy info to the bibliographic dataset
 biblio_with_policy <- biblio_clean %>%
   left_join(
     journal.policies_clean %>%
@@ -350,121 +323,91 @@ biblio_with_policy <- biblio_clean %>%
   )
 
 
-# Larger journals have a higher IF? Just plotting.
-journal_df <- biblio_clean %>%
-  count(journal_clean, name = "n") %>%
-  left_join(
-    biblio_clean %>%
-      select(journal_clean, five_year_impact_factor_2018) %>%
-      distinct(),
-    by = "journal_clean"
-  )
+# Are journals represented by more meta-analyses in our sample associated
+# with higher 2018 Journal Impact Factors?
 
-journal_df %>%
-  ggplot(aes(x = n, y = five_year_impact_factor_2018)) +
-  #ggplot(aes(x = log(n), y = log(five_year_impact_factor_2018))) +
-  
-  # points
+journal_df <- biblio_clean %>%
+  count(journal_clean,
+        five_year_impact_factor_2018,
+        name = "n")
+
+journal_df %>% ggplot(aes(n, five_year_impact_factor_2018)) +
   geom_point(
     alpha = 0.7,
     size = 4,
     color = "grey30"
   ) +
-  
-  # linear trend with 95% CI
   geom_smooth(
     method = "lm",
-    se = TRUE,
     color = "grey20",
     fill = "grey70",
     linewidth = 1
   ) +
-  
-  scale_x_continuous(
-    breaks = scales::pretty_breaks(n = 6),
-    expand = expansion(mult = c(0.05, 0.1))
-  ) +
-  
-  # scale_x_log10(
-  #   breaks = c(1, 2, 5, 10, 20),
-  #   expand = expansion(mult = c(0.05, 0.1))
-  # ) +
-  
   labs(
-    x = "Number of meta-analyses (n)",
-    y = "Five-year impact factor (2018) [log]"
+    x = "Number of sampled meta-analyses",
+    y = "Five-year impact factor (2018)"
   ) +
-  
-  theme_minimal() +
+  theme_minimal(base_size = 20) +
   theme(
-    panel.grid.major.y = element_line(linetype = "dashed", color = "grey80"),
-    panel.grid.major.x = element_line(linetype = "dashed", color = "grey80"),
+    panel.grid.major = element_line(
+      linetype = "dashed",
+      color = "grey80"
+    ),
     panel.grid.minor = element_blank(),
-    
-    axis.line = element_line(color = "grey30", linewidth = 0.8),
-    
+    axis.line = element_line(
+      color = "grey30",
+      linewidth = 0.8
+    ),
+    axis.title = element_text(size = 20),
     axis.title.x = element_text(
-      size = 28,
-      face = "bold",
       margin = margin(t = 12)
     ),
     axis.title.y = element_text(
-      size = 28,
-      face = "bold",
       margin = margin(r = 12)
     ),
-    
-    axis.text = element_text(size = 24, color = "grey20"),
-    plot.title = element_text(size = 28, hjust = 0.5)
+    axis.text = element_text(
+      color = "grey20"
+    )
   )
 
+################################################################################
+# Journal policies implementation year
+################################################################################
 
 # -----------------------------------------------------------------------------
 # Identify journals with articles published both before and after policy
 # implementation
 # -----------------------------------------------------------------------------
-# This section summarizes the bibliographic dataset by journal to determine
-# how many articles were published before and after the journal's policy year.
-# For journals with no policy ("none"), all articles are considered as having
-# the policy in place. This allows us to identify journals that provide 
-# "natural experiments" where the same journal has publications on both sides 
-# of policy implementation.
+# Articles are classified according to whether they were published before or
+# after the implementation of a weak or strong journal data-sharing policy.
+# Journals that never had a policy are retained as a separate category and are
+# not treated as part of a before-after comparison. Journals with articles on
+# both sides of policy implementation may support within-journal comparisons.
 
 # Determine if policy existed at the time of article publication
 biblio_with_policy <- biblio_with_policy %>%
   mutate(
     policy_in_place = case_when(
-      policy == "none" ~ TRUE,                               # no policy ever, treat as TRUE
+      policy == "none" ~ FALSE,                              # no policy ever, treat as TRUE
       !is.na(policyYYYY) & year >= policyYYYY ~ TRUE,       # policy existed when article published
       !is.na(policyYYYY) & year < policyYYYY  ~ FALSE,      # policy not yet in place
       TRUE ~ NA                                             # unknown/missing policy year
     )
   )
 
-# biblio_with_policy %>%
-#   count(policy)
-
 biblio_with_policy %>%
-  count(policy_in_place)
-
-biblio_with_policy %>%
-  count(policy)
-
-biblio_with_policy %>%
-  filter(policy_in_place == TRUE) %>%
-  count(policy)
+  count(
+    policy,
+    policy_in_place,
+    .drop = FALSE
+  )
 
 # Identify articles where the policy year is missing, excluding 'none' policies
-biblio_missing_policy_year <- biblio_with_policy %>%
-  filter(is.na(policyYYYY) & policy != "none") %>%
-  select(MA_ID, journal_clean, year, policy, policyYYYY)
+journals_missing_policy_year <- biblio_with_policy %>%
+  filter(policy %in% c("weak", "strong"),is.na(policyYYYY)) %>%
+  distinct(journal_clean,policy,policyYYYY)
 
-# View the unique journals with missing policy year (excluding 'none')
-unique_journals_missing_year <- biblio_missing_policy_year %>%
-  distinct(journal_clean, policy,policyYYYY)
-
-# Print results
-unique_journals_missing_year
+journals_missing_policy_year
 
 # > unique_journals_missing_year
 # journal_clean policy policyYYYY
@@ -480,15 +423,6 @@ unique_journals_missing_year
 
 # I contacted the journals asking for information on the year of implementation
 
-# -----------------------------------------------------------------------------
-# Identify journals with articles published both before and after policy
-# implementation
-# -----------------------------------------------------------------------------
-# This section summarizes the bibliographic dataset by journal to determine
-# how many articles were published before and after the journal's policy year.
-# It allows us to identify journals that provide "natural experiments" where
-# the same journal has publications on both sides of policy implementation,
-# which can be useful for comparing practices or outcomes pre- vs post-policy.
 journal_policy_summary <- biblio_with_policy %>%
   group_by(journal_clean) %>%
   summarise(
@@ -506,34 +440,28 @@ journals_before_after <- journal_policy_summary %>%
 
 journals_before_after
 
-
 ################################################################################
 # Citations
 ################################################################################
 
-#
-# 0. Adding a total number of citations for each article
+# Adding a total number of citations for each article
 
-
-
-df <- df %>%
+citations_df <- citations_df %>%
   mutate(
     GS_total_citations = rowSums(
-      dplyr::select(., starts_with("GS_citations_")),
+      across(starts_with("GS_citations_")),
       na.rm = TRUE
     )
   )
-
-
 
 # and the first 6 years (including the publication year, but excluding any
 # citations that happened before the actual publication of the article)
 
 # Identify citation columns and extract their years
-citation_cols  <- grep("^GS_citations_", names(df), value = TRUE)
+citation_cols  <- grep("^GS_citations_", names(citations_df), value = TRUE)
 citation_years <- as.integer(str_remove(citation_cols, "GS_citations_"))
 
-df <- df %>%
+citations_df <- citations_df %>%
   rowwise() %>%
   mutate(
     GS_6_first_years = sum(
@@ -546,12 +474,12 @@ df <- df %>%
   ungroup() %>%
   as.data.frame()
 
-df$GS_6_first_years_per_year <- df$GS_6_first_years/6
+citations_df$GS_6_first_years_per_year <- citations_df$GS_6_first_years/6
 
-head(df)
-summary(df)
+head(citations_df)
+summary(citations_df)
 
-df.total.citations <- df[,c("MA_ID","GS_date_citations","GS_total_citations",
+df.total.citations <- citations_df[,c("MA_ID","GS_date_citations","GS_total_citations",
                             "GS_6_first_years","GS_6_first_years_per_year")]
 
 ################################################################################
@@ -565,13 +493,14 @@ biblio_with_policy_citations <- biblio_with_policy %>%
   as.data.frame()
 
 write.csv(biblio_with_policy_citations,
-          "data/processed_data/combined/meta-analysis_2016-2020_citations_and_policies_summary.csv",
+          "data/02_processed_data/combined/meta-analysis_2016-2020_citations_and_policies_summary.csv",
           row.names=FALSE)
 
 
 ################################################################################
-# 1. Reshape from wide to long
-df_long <- df %>%
+
+# From wide to long data
+df_long <- citations_df %>%
   pivot_longer(
     cols = starts_with("GS_citations_"),
     names_to = "citation_year",
@@ -581,18 +510,14 @@ df_long <- df %>%
     citation_year = as.numeric(gsub("GS_citations_", "", citation_year))
   )
 
-################################################################################
-# 2. Compute years since publication
+# Compute years since publication
 df_long <- df_long %>%
   mutate(years_since_pub = citation_year - year_of_publication)
 
-################################################################################
-# 3. Remove NA citations
+# Remove NA citations
 df_long <- df_long %>% filter(!is.na(citations))
-df_long
 
-################################################################################
-# 4. Identify peak citation year per meta-analysis
+# Identify peak citation year per meta-analysis
 peaks <- df_long %>%
   group_by(MA_ID) %>%
   filter(citations == max(citations, na.rm = TRUE)) %>%
@@ -600,10 +525,7 @@ peaks <- df_long %>%
   slice_min(years_since_pub, with_ties = FALSE) %>%
   ungroup()
 
-peaks
-
-################################################################################
-# 5. Compute mean and 95% CI for years_since_pub
+# Computing mean and 95% CI for years_since_pub
 summary_stats <- peaks %>%
   summarise(
     mean_peak_years = mean(years_since_pub, na.rm = TRUE),
@@ -616,9 +538,8 @@ summary_stats <- peaks %>%
 
 summary_stats
 
-################################################################################
 # visualisation
-ggplot(peaks, aes(x = years_since_pub)) +
+citation_peak_plot<-ggplot(peaks, aes(x = years_since_pub)) +
   geom_histogram(binwidth = 1, fill = "steelblue", color = "white") +
   geom_vline(xintercept = summary_stats$mean_peak_years, color = "red", linetype = "dashed") +
   labs(
@@ -629,401 +550,45 @@ ggplot(peaks, aes(x = years_since_pub)) +
   theme_minimal()
 
 
-################################################################################
-# modelling
-################################################################################
-# Load packages
-library(dplyr)
-library(tidyr)
-library(lme4)
-
-################################################################################
-# ---- Reshape to long format ----
-df_long <- df %>%
-  pivot_longer(
-    cols = starts_with("GS_citations_"),
-    names_to = "citation_year",
-    values_to = "citations"
-  ) %>%
-  mutate(
-    citation_year = as.integer(gsub("GS_citations_", "", citation_year)),
-    years_since_pub = citation_year - year_of_publication
-  ) %>%
-  filter(!is.na(citations))  # Drop years before publication (no data)
-
-df_long
-
-# # Optionally drop pre-publication years if you don’t want them:
-df_long <- df_long %>% filter(years_since_pub >= 0)
-# # subsetting for paper published before 2019
-#df_long <- df_long %>% filter(year_of_publication <= 2018)
-
-################################################################################
-# ---- Center predictor for numerical stability ----
-df_long <- df_long %>%
-  mutate(years_c = years_since_pub - mean(years_since_pub, na.rm = TRUE))
-
-################################################################################
-# ---- Fit the model ----
-# Model: citations ~ years_c + I(years_c^2) + (1 + years_c | MA_ID)
-# Poisson link with random intercept and slope per MA
-
-m_glmer <- glmer(
-  citations ~ years_c + I(years_c^2) + (1 + years_c | MA_ID),
-  data = df_long,
-  family = poisson(link = "log"),
-  control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e5))
+ggsave(
+  filename = "figures/Supplementary_Figure_citation_peak_years.png",
+  plot = citation_peak_plot,
+  width = 18,
+  height = 14,
+  units = "cm",
 )
 
-summary(m_glmer)
 
-################################################################################
-# check for overdispersion
-overdisp_fun <- function(model) {
-  rdf <- df.residual(model)
-  rp <- residuals(model, type = "pearson")
-  Pearson.chisq <- sum(rp^2)
-  prat <- Pearson.chisq / rdf
-  pval <- pchisq(Pearson.chisq, df = rdf, lower.tail = FALSE)
-  c(chisq = Pearson.chisq, ratio = prat, rdf = rdf, p = pval)
-}
-
-overdisp_fun(m_glmer)
-
-# If ratio ≫ 1 or p < 0.05 → overdispersion is likely → use:
-
-# Option 1: Add observation-level random effect (OLRE)
-df_long$obs <- 1:nrow(df_long)
-m_glmer_nb <- glmer(
-  citations ~ years_c + I(years_c^2) + (1 + years_c | MA_ID) + (1 | obs),
-  data = df_long,
-  family = poisson(link = "log")
-)
-
-summary(m_glmer_nb)
-overdisp_fun(m_glmer_nb)
-
-################################################################################
+# sessionInfo()
+# R version 4.5.2 (2025-10-31)
+# Platform: aarch64-apple-darwin20
+# Running under: macOS Tahoe 26.3.1
 # 
-# Extract fixed effects and random slopes per meta-analysis (MA_ID),
-# Compute each MA’s peak year (the year where predicted citations are highest),
-# Derive a mean and 95% CI for the distribution of these peaks across all meta-analyses.
-
-library(broom.mixed)
-
-# 1. Extract coefficients
-fixef_vals <- fixef(m_glmer)  # fixed effects: intercept, years_c, years_c^2
-ranef_vals <- ranef(m_glmer)$MA_ID  # random effects per MA_ID
-
-# 2. Get fixed slopes
-b1 <- fixef_vals["years_c"]
-b2 <- fixef_vals["I(years_c^2)"]
-
-# 3. Compute peak per meta-analysis
-peaks_df <- ranef_vals %>%
-  mutate(
-    MA_ID = rownames(ranef_vals),
-    slope_adj = b1 + years_c,    # add random slope
-    peak_centered = -slope_adj / (2 * b2)
-  ) %>%
-  as.data.frame() %>%
-  select(MA_ID, peak_centered)
-
-# 4. Convert centered peaks to raw scale
-mean_years_c <- mean(df_long$years_since_pub, na.rm = TRUE)
-peaks_df <- peaks_df %>%
-  mutate(peak_raw = peak_centered + mean_years_c)
-
-# 5. Summarize across MAs
-peak_summary <- peaks_df %>%
-  summarise(
-    mean_peak = mean(peak_raw, na.rm = TRUE),
-    sd_peak = sd(peak_raw, na.rm = TRUE),
-    n = n(),
-    se_peak = sd_peak / sqrt(n),
-    ci_lower = mean_peak - 1.96 * se_peak,
-    ci_upper = mean_peak + 1.96 * se_peak
-  )
-
-peak_summary
-
-
-# After computing peaks, you can verify:
-peaks_df <- peaks_df %>%
-  left_join(df_long %>%
-              group_by(MA_ID) %>%
-              summarise(max_observed_year = max(years_since_pub, na.rm = TRUE)),
-            by = "MA_ID") %>%
-  mutate(out_of_range = peak_raw > max_observed_year)
-
-table(peaks_df$out_of_range)
-
-# This tells you how many predicted peaks are outside observed years. If many 
-# are, the model might be too flexible or extrapolating too much.
-
-
-################################################################################
-# Plotting
-
-library(dplyr)
-library(ggplot2)
-library(ggeffects)
-
-# --- 0. sanity check: objects exist ---
-if(!exists("m_glmer_nb") || !exists("df_long")) stop("Make sure 'm_glmer_nb' and 'df_long' exist in your workspace.")
-
-# --- 1. Population-level prediction curve (with 95% CI) ---
-# ggpredict gives you population-level effects (marginal over RE)
-pred_fe <- ggpredict(m_glmer_nb, terms = "years_c [all]") %>%
-  as.data.frame() %>%
-  rename(
-    years_c = x,
-    predicted = predicted,
-    conf.low = conf.low,
-    conf.high = conf.high
-  )
-
-# Convert back to raw scale (years since publication)
-mean_years <- mean(df_long$years_since_pub, na.rm = TRUE)
-pred_fe <- pred_fe %>%
-  mutate(years_since_pub = years_c + mean_years)
-
-# --- 2. Compute per-MA peaks (analytic quadratic vertex), clip to observed range ---
-# Extract fixed effects
-fe <- fixef(m_glmer_nb)
-b1 <- fe["years_c"]
-b2 <- fe["I(years_c^2)"]
-
-# Extract random effects for MA_ID
-re_ma <- ranef(m_glmer_nb)$MA_ID %>% as.data.frame()
-re_ma$MA_ID <- rownames(ranef(m_glmer_nb)$MA_ID)
-
-# Compute per-MA peaks
-peaks_df <- re_ma %>%
-  rename(u0 = "(Intercept)", u1 = "years_c") %>%
-  mutate(
-    slope_adj = b1 + u1,                      # Adjusted slope per MA
-    peak_centered = -slope_adj / (2 * b2),    # Peak (centered scale)
-    peak_raw = peak_centered + mean_years     # Convert to raw years_since_pub
-  )
-
-# Clip peaks to observed range
-max_obs <- df_long %>%
-  group_by(MA_ID) %>%
-  summarise(max_obs_year = max(years_since_pub, na.rm = TRUE), .groups = "drop")
-
-peaks_df <- peaks_df %>%
-  left_join(max_obs, by = "MA_ID") %>%
-  mutate(peak_clipped = pmin(peak_raw, max_obs_year))
-
-# --- 3. Get predicted citation count at per-MA peaks ---
-pred_new <- peaks_df %>%
-  transmute(
-    MA_ID,
-    years_since_pub = peak_clipped,
-    years_c = peak_clipped - mean_years
-  )
-
-# --- Fix: ignore obs-level random effect and keep MA_ID RE ---
-pred_new$predicted_count <- predict(
-  m_glmer_nb,
-  newdata = pred_new,
-  type = "response",
-  re.form = ~(1 + years_c | MA_ID)  # include only MA_ID RE, ignore obs
-)
-
-# Merge predicted counts into peaks_df
-peaks_df <- peaks_df %>%
-  left_join(pred_new %>% select(MA_ID, predicted_count), by = "MA_ID")
-
-################################################################################
-# --- 4. Plot ---
-p <- ggplot() +
-  # Raw per-MA citation trajectories
-  geom_line(
-    data = df_long,
-    aes(x = years_since_pub, y = citations, group = MA_ID),
-    color = "gray70", alpha = 0.5, size = 0.5
-  ) +
-  # Population-level 95% CI ribbon and mean curve
-  geom_ribbon(
-    data = pred_fe,
-    aes(x = years_since_pub, ymin = conf.low, ymax = conf.high),
-    fill = "skyblue", alpha = 0.25
-  ) +
-  geom_line(
-    data = pred_fe,
-    aes(x = years_since_pub, y = predicted),
-    color = "blue", size = 1.2
-  ) +
-  # Per-MA predicted peaks
-  geom_point(
-    data = peaks_df %>% filter(!is.na(predicted_count)),
-    aes(x = peak_clipped, y = predicted_count),
-    color = "red", fill = "red", size = 2, alpha = 0.8
-  ) +
-  # Optional: vertical segment to peak
-  geom_segment(
-    data = peaks_df %>% filter(!is.na(predicted_count)),
-    aes(x = peak_clipped, xend = peak_clipped, y = 0, yend = predicted_count),
-    color = "red", alpha = 0.3, size = 0.3
-  ) +
-  labs(
-    x = "Years since publication",
-    y = "Citations (Google Scholar)",
-    title = "Citation trajectories (gray) and population fit (blue)",
-    subtitle = "Red points = per-MA estimated peaks (clipped to observed range); ribbon = 95% CI"
-  ) +
-  theme_minimal(base_size = 14)
-
-print(p)
-
-
-# ================================================================================
-# Plot description:
-#
-# Title:
-# "Citation trajectories (gray) and population fit (blue)"
-#
-# Axes:
-# - X-axis: Years since publication — how many years have passed since a paper was published.
-# - Y-axis: Citations (Google Scholar) — the number of citations each paper has received.
-#
-# Elements in the plot:
-# 1. Gray lines:
-#    - Each gray line represents a single MA_ID’s citation trajectory over time.
-#    - Shows the raw, observed citation counts per paper.
-#    - Transparency (alpha = 0.5) keeps overlapping lines visible but not overwhelming.
-#
-# 2. Blue curve:
-#    - Represents the population-level prediction from the quadratic GLMM, marginalizing over random effects.
-#    - Shows the average citation trajectory expected across all MAs.
-#
-# 3. Light blue ribbon around the blue line:
-#    - The 95% confidence interval of the population-level prediction.
-#    - Gives a sense of uncertainty around the mean trajectory.
-#
-# 4. Red points:
-#    - Indicate the predicted peak citation count for each MA, calculated as the vertex of the quadratic fit, and clipped to the observed years if necessary.
-#    - Shows when each MA is expected to reach its highest citation count.
-#
-# 5. Red vertical lines:
-#    - Extend from y = 0 to the predicted peak citation count.
-#    - Provide a visual cue linking the x-axis (time) to the peak.
-#
-# Interpretation:
-# - Gray lines show raw variation in trajectories across MAs.
-# - Blue curve shows the overall trend, smoothing over individual differences.
-# - Red points highlight the timing and magnitude of per-MA peaks, helping identify which MAs reach their maximum influence earlier or later.
-# - The plot effectively visualizes both individual-level trajectories and the average pattern, while also showing uncertainty via the confidence ribbon.
-# ================================================================================
-
-
-
-
-
-# ================================================================================
-# Population-level peak description:
-#
-# This calculates the mean peak (vertex) of the population-level citation trajectory
-# from the quadratic GLMM, along with an approximate 95% confidence interval.
-#
-# - pop_peak_raw: Estimated year since publication at which the overall population
-#   of MAs reaches maximum citations (based on the fixed-effects curve).
-#
-# - ci_lower / ci_upper: Approximate 95% confidence interval around the population
-#   peak, derived using the delta method from the variance-covariance matrix of
-#   the fixed effects.
-#
-# Interpretation:
-# - The population peak represents the "average" timing of maximum impact across
-#   all MAs, ignoring MA-specific random effects and obs-level noise.
-# - The CI provides a measure of uncertainty in this estimate due to the model's
-#   fixed-effects parameter uncertainty.
-# - This can be visualized as a single point (or vertical line) on the citation
-#   trajectory plot to show where the overall population is expected to peak.
-# ================================================================================
-
-
-# Extract fixed effects
-fe <- fixef(m_glmer_nb)
-b1 <- fe["years_c"]
-b2 <- fe["I(years_c^2)"]
-
-# Population-level peak (centered scale)
-pop_peak_centered <- -b1 / (2 * b2)
-
-# Convert to raw scale
-mean_years <- mean(df_long$years_since_pub, na.rm = TRUE)
-pop_peak_raw <- pop_peak_centered + mean_years
-pop_peak_raw
-
-# Variance-covariance of fixed effects
-vcov_fe <- vcov(m_glmer_nb)
-
-# Delta method for peak variance
-var_peak <- (1 / (4 * b2^2)) * (
-  vcov_fe["years_c", "years_c"] +
-    (b1^2 / b2^2) * vcov_fe["I(years_c^2)", "I(years_c^2)"] -
-    2 * (b1 / b2) * vcov_fe["years_c", "I(years_c^2)"]
-)
-
-# Standard error and 95% CI
-se_peak <- sqrt(var_peak)
-ci_lower <- pop_peak_raw - 1.96 * se_peak
-ci_upper <- pop_peak_raw + 1.96 * se_peak
-
-# Print results
-pop_peak_raw
-ci_lower
-ci_upper
-
-
-
-# ================================================================================
-# Compute average citations per year across papers
-# ================================================================================
-
-avg_citations_per_year <- df_long %>%
-  group_by(years_since_pub) %>%            # group by years since publication
-  summarise(
-    mean_citations = mean(citations, na.rm = TRUE),   # average across papers
-    sd_citations = sd(citations, na.rm = TRUE),       # standard deviation
-    cv_citations = sd_citations/mean_citations,
-    n_papers = n()                                    # number of papers per year
-  ) %>%
-  ungroup()
-
-# View the result
-avg_citations_per_year
-
-ggplot(avg_citations_per_year, aes(x = years_since_pub, y = mean_citations)) +
-  geom_line(color = "blue", size = 1.2) +
-  geom_ribbon(aes(ymin = mean_citations - sd_citations,
-                  ymax = mean_citations + sd_citations),
-              fill = "skyblue", alpha = 0.25) +
-  labs(
-    x = "Years since publication",
-    y = "Average citations per year per paper",
-    title = "Average citation trajectory across papers"
-  ) +
-  theme_minimal(base_size = 14)
-
-
-ggplot(avg_citations_per_year, 
-       aes(x = years_since_pub, y = mean_citations)) +
-  geom_point(size = 3, color = "#2C7BB6") +
-  geom_errorbar(aes(ymin = mean_citations - sd_citations,
-                    ymax = mean_citations + sd_citations),
-                width = 0, size = 0.9, color = "#2C7BB6") +
-  scale_x_continuous(breaks = 0:10, limits = c(0, 10)) +
-  labs(
-    x = "Years since publication",
-    y = "Average citations per year per paper",
-    title = "Average citation trajectory across papers"
-  ) +
-  theme_minimal(base_size = 14) +
-  theme(
-    panel.grid.minor = element_blank(),
-    panel.grid.major.x = element_blank()
-  )
+# Matrix products: default
+# BLAS:   /System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/libBLAS.dylib 
+# LAPACK: /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1
+# 
+# locale:
+#   [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+# 
+# time zone: Europe/Berlin
+# tzcode source: internal
+# 
+# attached base packages:
+#   [1] stats     graphics  grDevices utils     datasets  methods   base     
+# 
+# other attached packages:
+#   [1] lme4_2.0-1      Matrix_1.7-5    readxl_1.5.0    writexl_1.5.4   lubridate_1.9.5 forcats_1.0.1   stringr_1.6.0  
+# [8] purrr_1.2.2     readr_2.2.0     tidyr_1.3.2     tibble_3.3.1    ggplot2_4.0.3   tidyverse_2.0.0 dplyr_1.2.1    
+# 
+# loaded via a namespace (and not attached):
+#   [1] gtable_0.3.6       xfun_0.58          lattice_0.22-9     tzdb_0.5.0         vctrs_0.7.3        tools_4.5.2       
+# [7] Rdpack_2.6.6       generics_0.1.4     pacman_0.5.1       pkgconfig_2.0.3    RColorBrewer_1.1-3 S7_0.2.2          
+# [13] lifecycle_1.0.5    compiler_4.5.2     farver_2.1.2       textshaping_1.0.5  htmltools_0.5.9    yaml_2.3.12       
+# [19] pillar_1.11.1      nloptr_2.2.1       MASS_7.3-65        reformulas_0.4.4   viridis_0.6.5      boot_1.3-32       
+# [25] nlme_3.1-169       tidyselect_1.2.1   digest_0.6.39      stringi_1.8.7      labeling_0.4.3     splines_4.5.2     
+# [31] rprojroot_2.1.1    fastmap_1.2.0      grid_4.5.2         here_1.0.2         cli_3.6.6          magrittr_2.0.5    
+# [37] patchwork_1.3.2    utf8_1.2.6         withr_3.0.3        scales_1.4.0       timechange_0.4.0   rmarkdown_2.31    
+# [43] otel_0.2.0         gridExtra_2.3      cellranger_1.1.0   ragg_1.5.2         hms_1.1.4          evaluate_1.0.5    
+# [49] knitr_1.51         rbibutils_2.4.1    viridisLite_0.4.3  mgcv_1.9-4         rlang_1.3.0        Rcpp_1.1.2        
+# [55] glue_1.8.1         rstudioapi_0.18.0  minqa_1.2.8        R6_2.6.1           systemfonts_1.3.2 
