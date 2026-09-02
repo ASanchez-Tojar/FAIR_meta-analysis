@@ -14,6 +14,8 @@ The repository is organized into separate folders for
 
 `data/`: contains all datasets raw and processed, used for the study.
 
+`data-dictionary/data_dictionary_final_MR_MA.md`: provides definitions for all variables in the final analysis dataset and summarises observed values for each variable.
+
 `figures/`: contains the figures generated for the manuscript and supplementary materials of this project.
 
 `README.md`: provides an overview of the repository structure, workflow, code files, and some instructions for reproducing the analyses.
